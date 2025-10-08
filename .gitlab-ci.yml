@@ -1,7 +1,7 @@
 stages:
   - build
   - docker
-  - chart
+  # - chart
 
 variables:
   DOCKER_IMAGE: $CI_REGISTRY_IMAGE/nextjs
@@ -36,6 +36,7 @@ build_app:
       - package.json
       - pnpm-lock.yaml
       - node_modules/
+      - Dockerfile
     expire_in: 1 day
 
 # 2️⃣ 构建 Docker 镜像
@@ -45,6 +46,7 @@ docker-build:
   services:
     - docker:dind
   script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" "$CI_REGISTRY" --password-stdin
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   only:
