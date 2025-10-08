@@ -1,0 +1,62 @@
+stages:
+  - build
+  - docker
+  - chart
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE/nextjs
+  APP_VERSION: $CI_COMMIT_SHORT_SHA
+
+# 1️⃣ 构建 Next.js 项目
+build_app:
+  stage: build
+  image: node:22.19.0
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .pnpm-store/
+  before_script:
+    # 安装 pnpm（官方推荐方式）
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    # 验证 pnpm 是否可用
+    - pnpm --version
+  script:
+    # 确保 pnpm-lock.yaml 存在且一致
+    - test -f pnpm-lock.yaml || (echo "❌ pnpm-lock.yaml 不存在" && exit 1)
+    - pnpm install --frozen-lockfile
+    - pnpm run build
+    # ✅ 在编译完成后，将 server 下的 Dockerfile 移动到根目录
+    - mv server/Dockerfile ./
+  artifacts:
+    paths:
+      - .next/
+      - public/
+      - package.json
+      - pnpm-lock.yaml
+      - node_modules/
+    expire_in: 1 day
+
+# 2️⃣ 构建 Docker 镜像
+docker-build:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  only:
+    - main
+
+# 3️⃣ 打包 Chart
+# package_chart:
+#   stage: chart
+#   image: alpine/helm:3.13.0
+#   script:
+#     - helm lint chart/my-next-app
+#     - helm package chart/my-next-app --version $APP_VERSION --app-version $APP_VERSION -d packaged/
+#   artifacts:
+#     paths:
+#       - packaged/
