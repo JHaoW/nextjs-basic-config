@@ -68,7 +68,7 @@ jobs:
             public/
             package.json
             pnpm-lock.yaml
-            node_modules/
+            # node_modules/
             Dockerfile
           retention-days: 1
 
@@ -107,9 +107,15 @@ jobs:
             -u "${{ github.actor }}" \
             --password-stdin
 
+      - name: Check standalone exists in build context
+        run: |
+          ls -al dist/.next
+          ls -al dist/.next/standalone || true
+          find dist/.next/standalone -maxdepth 2 -print || true
+
       - name: Build Docker image
         run: |
-          docker build -t $DOCKER_IMAGE:${GITHUB_SHA} dist
+          docker build -t $DOCKER_IMAGE:${GITHUB_SHA} .
 
       - name: Push Docker image
         run: |
