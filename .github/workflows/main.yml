@@ -80,13 +80,26 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # 这里可以不 checkout（artifact 已包含 Dockerfile/.next/public）
+      # 如果你要 checkout 也行，但要注意不要把 artifact 解压目录覆盖掉
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+          path: dist
+
+      - name: Verify artifact contents
+        run: |
+          echo "PWD=$(pwd)"
+          echo "=== dist root ==="
+          ls -al dist
+          echo "=== find .next ==="
+          find dist -maxdepth 3 -type d -name ".next" -print
+          echo "=== check required paths ==="
+          test -d dist/.next/standalone || (echo "dist/.next/standalone missing" && exit 1)
+          test -f dist/Dockerfile || (echo "dist/Dockerfile missing" && exit 1)
+          test -d dist/public || echo "dist/public missing (ok if empty, but Dockerfile COPY will fail unless it exists)"
 
       - name: Login to GHCR
         run: |
@@ -96,11 +109,12 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKER_IMAGE:${{ github.sha }} .
+          docker build -t $DOCKER_IMAGE:${GITHUB_SHA} dist
 
       - name: Push Docker image
         run: |
-          docker push $DOCKER_IMAGE:${{ github.sha }}
-          echo "Image pushed."
-          echo "Pull with commit SHA tag:"
-          echo "  docker pull ${DOCKER_IMAGE}:${GITHUB_SHA}"
+          docker push $DOCKER_IMAGE:${GITHUB_SHA}
+
+      - name: Print docker pull command
+        run: |
+          echo "docker pull ${DOCKER_IMAGE}:${GITHUB_SHA}"
