@@ -55,6 +55,14 @@ jobs:
           mkdir -p public
           # pnpm prune --prod --ignore-scripts
 
+      - name: Create deploy directory (prod-only)
+        run: |
+          rm -rf deploy
+          pnpm deploy --prod --no-optional deploy
+          # 保险起见验证入口
+          test -f deploy/node_modules/styled-jsx/package.json
+          node -e "require('./deploy/node_modules/styled-jsx/package.json'); console.log('deploy styled-jsx ok')"
+
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
 
@@ -89,29 +97,11 @@ jobs:
           name: build-artifacts
           path: dist
 
-      - name: Verify artifact contents
-        run: |
-          echo "PWD=$(pwd)"
-          echo "=== dist root ==="
-          ls -al dist
-          echo "=== find .next ==="
-          find dist -maxdepth 3 -type d -name ".next" -print
-          echo "=== check required paths ==="
-          test -d dist/.next/standalone || (echo "dist/.next/standalone missing" && exit 1)
-          test -f dist/Dockerfile || (echo "dist/Dockerfile missing" && exit 1)
-          test -d dist/public || echo "dist/public missing (ok if empty, but Dockerfile COPY will fail unless it exists)"
-
       - name: Login to GHCR
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
             -u "${{ github.actor }}" \
             --password-stdin
-
-      - name: Check standalone exists in build context
-        run: |
-          ls -al dist/.next
-          ls -al dist/.next/standalone || true
-          find dist/.next/standalone -maxdepth 2 -print || true
 
       - name: Build Docker image
         run: |
