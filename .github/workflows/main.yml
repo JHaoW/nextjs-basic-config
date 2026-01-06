@@ -52,7 +52,7 @@ jobs:
       - name: Build project
         run: |
           pnpm run build
-          pnpm prune --prod --ignore-scripts
+          # pnpm prune --prod --ignore-scripts
 
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
@@ -102,4 +102,4 @@ jobs:
           docker push $DOCKER_IMAGE:${{ github.sha }}
           echo "Image pushed."
           echo "Pull with commit SHA tag:"
-          echo "  docker pull ${DOCKER_IMAGE}:${github.sha}"
+          echo "  docker pull ${DOCKER_IMAGE}:${GITHUB_SHA}"
