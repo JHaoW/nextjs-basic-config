@@ -55,14 +55,6 @@ jobs:
           mkdir -p public
           # pnpm prune --prod --ignore-scripts
 
-      - name: Create deploy directory (prod-only)
-        run: |
-          rm -rf deploy
-          pnpm deploy --prod --no-optional deploy
-          # 保险起见验证入口
-          test -f deploy/node_modules/styled-jsx/package.json
-          node -e "require('./deploy/node_modules/styled-jsx/package.json'); console.log('deploy styled-jsx ok')"
-
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
 
@@ -88,9 +80,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      # 这里可以不 checkout（artifact 已包含 Dockerfile/.next/public）
-      # 如果你要 checkout 也行，但要注意不要把 artifact 解压目录覆盖掉
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
