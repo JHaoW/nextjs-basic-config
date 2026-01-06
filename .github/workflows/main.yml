@@ -52,7 +52,7 @@ jobs:
       - name: Build project
         run: |
           pnpm run build
-          pnpm prune --prod
+          pnpm prune --prod --ignore-scripts
 
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
