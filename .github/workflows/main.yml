@@ -68,12 +68,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
+          include-hidden-files: true
           path: |
             .next/
             public/
             package.json
             pnpm-lock.yaml
-            node_modules/
+            # node_modules/
             Dockerfile
           retention-days: 1
 
