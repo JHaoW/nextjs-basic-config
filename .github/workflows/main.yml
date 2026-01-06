@@ -7,8 +7,12 @@ on:
       - '**' # 所有分支都 build，但只有 main 推 docker
   pull_request:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
-  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/nextjs
+  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/nextjs-basic-config
   APP_VERSION: ${{ github.sha }}
 
 jobs:
