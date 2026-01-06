@@ -57,6 +57,17 @@ jobs:
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
 
+      - name: Check standalone output
+        run: |
+          echo "Next version:"
+          node -e "console.log(require('next/package.json').version)"
+          echo "next.config files:"
+          ls -al next.config.* || true
+          echo ".next tree (top 2 levels):"
+          find .next -maxdepth 2 -type d -print || true
+          echo "standalone exists?"
+          test -d .next/standalone && echo "YES" || (echo "NO" && exit 1)
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
