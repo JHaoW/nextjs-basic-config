@@ -115,7 +115,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t $DOCKER_IMAGE:${GITHUB_SHA} .
+          docker build --no-cache -f dist/Dockerfile -t $DOCKER_IMAGE:${GITHUB_SHA} dist
 
       - name: Push Docker image
         run: |
