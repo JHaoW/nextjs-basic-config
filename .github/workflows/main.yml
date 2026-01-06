@@ -50,7 +50,16 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: pnpm run build
+        run: |
+          pnpm run build
+          echo "===== Current directory ====="
+          pwd
+          echo "===== Root files ====="
+          ls -al
+          echo "===== .next folder ====="
+          ls -al .next || echo ".next not found"
+          echo "===== public folder ====="
+          ls -al public || echo "public not found"
 
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
