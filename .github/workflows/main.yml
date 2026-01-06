@@ -52,14 +52,7 @@ jobs:
       - name: Build project
         run: |
           pnpm run build
-          echo "===== Current directory ====="
-          pwd
-          echo "===== Root files ====="
-          ls -al
-          echo "===== .next folder ====="
-          ls -al .next || echo ".next not found"
-          echo "===== public folder ====="
-          ls -al public || echo "public not found"
+          pnpm prune --prod
 
       - name: Move Dockerfile
         run: mv server/Dockerfile ./
@@ -74,7 +67,7 @@ jobs:
             public/
             package.json
             pnpm-lock.yaml
-            # node_modules/
+            node_modules/
             Dockerfile
           retention-days: 1
 
@@ -107,3 +100,6 @@ jobs:
       - name: Push Docker image
         run: |
           docker push $DOCKER_IMAGE:${{ github.sha }}
+          echo "Image pushed."
+          echo "Pull with commit SHA tag:"
+          echo "  docker pull ${DOCKER_IMAGE}:${github.sha}"
